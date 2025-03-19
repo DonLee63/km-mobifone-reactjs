@@ -149,12 +149,12 @@ const PromotionDetail = () => {
               </Typography>
               <Box sx={{ display: "flex", gap: 2 }}>
                 <Chip
-                  label={`Bắt đầu: ${new Date(promotion.start_at).toLocaleDateString("vi-VN")}`}
+                  label={`Bắt đầu: ${promotion.start_at ? new Date(promotion.start_at).toLocaleDateString("vi-VN") : "Không xác định"}`}
                   color="primary"
                   variant="outlined"
                 />
                 <Chip
-                  label={`Kết thúc: ${new Date(promotion.end_at).toLocaleDateString("vi-VN")}`}
+                  label={`Kết thúc: ${promotion.end_at ? new Date(promotion.end_at).toLocaleDateString("vi-VN") : "Không xác định"}`}
                   color="error"
                   variant="outlined"
                 />

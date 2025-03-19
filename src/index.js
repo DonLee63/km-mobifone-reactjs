@@ -5,8 +5,14 @@ import { CssBaseline } from "@mui/material";
 
 const root = createRoot(document.getElementById("root")); // Tạo root
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
+    // <CssBaseline />
+    // <App />
+  // </React.StrictMode>
+
+  <>
     <CssBaseline />
     <App />
-  </React.StrictMode>
+  </>
+
 );

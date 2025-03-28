@@ -6,6 +6,7 @@ import Banner from "./components/Banner";
 import Footer from "./components/Footer";
 import ProductGrid from "./components/ProductGrid";
 import PromotionDetail from "./components/PromotionDetail";
+import SearchResults from "./components/SearchResults"; // Import trang SearchResults
 
 function App() {
   const [promotions, setPromotions] = useState([]); // Đảm bảo khởi tạo là mảng rỗng
@@ -31,10 +32,10 @@ function App() {
     <Router>
       <div>
         <Header />
-        <Banner />
         <Routes>
-          <Route path="/" element={<ProductGrid promotions={promotions} />} />
+          <Route path="/" element={<><Banner /><ProductGrid promotions={promotions} /></>} />
           <Route path="/promotion/:id" element={<PromotionDetail />} />
+          <Route path="/search" element={<SearchResults />} /> {/* Thêm route cho tìm kiếm */}
         </Routes>
         <Footer />
       </div>

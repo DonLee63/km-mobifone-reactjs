@@ -26,11 +26,21 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import axiosClient from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 
+// const StyledToolbar = styled(Toolbar)({
+//   display: "flex",
+//   justifyContent: "space-between",
+//   alignItems: "center",
+//   padding: "0 16px",
+// });
 const StyledToolbar = styled(Toolbar)({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "0 16px",
+  padding: "0 32px", // Tăng padding hai bên để tạo khoảng cách
+  maxWidth: "1355px", // Giới hạn chiều rộng của header (có thể thay đổi giá trị này)
+  width: "100%",
+  margin: "0 auto", // Căn giữa header
+  height: "80px",
 });
 
 const MenuButtons = styled("div")({
@@ -43,7 +53,7 @@ const SearchContainer = styled("div")(({ theme }) => ({
   alignItems: "center",
   backgroundColor: "#fff",
   borderRadius: "20px",
-  padding: "4px 8px",
+  padding: "2px 8px",
   width: "300px",
   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
   transition: "all 0.3s ease",
@@ -142,6 +152,10 @@ const Header = () => {
       sx={{
         bgcolor: "#1976d2",
         color: "#fff",
+        // 
+        height: "80px", // Đặt chiều cao cụ thể cho header (có thể thay đổi giá trị này)
+        display: "flex",
+        alignItems: "center", // Căn giữa nội dung theo chiều dọc
       }}
     >
       <StyledToolbar>
@@ -164,10 +178,7 @@ const Header = () => {
         {!isMobile && (
           <MenuButtons>
             <StyledButton onClick={() => navigate("/promotions")}>
-              Khuyến mại
-            </StyledButton>
-            <StyledButton onClick={() => navigate("/services")}>
-              Dịch vụ
+              Giới thiệu
             </StyledButton>
             <StyledButton onClick={() => navigate("/packages")}>
               Gói cước
@@ -208,7 +219,7 @@ const Header = () => {
               </Menu>
             </div>
             <StyledButton onClick={() => navigate("/news")}>
-              Tin tức
+              Hỗ trợ
             </StyledButton>
           </MenuButtons>
         )}

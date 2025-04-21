@@ -71,7 +71,7 @@ const Banner = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: "0 auto", padding: { xs: "0", sm: "0", md: "0" } }}>
+    <Box sx={{ maxWidth: 1300, margin: "0 auto", padding: { xs: "0", sm: "0", md: "0" }, marginTop: { xs: "8px", sm: "16px", md: "24px" }, }}>
       <Slider {...settings}>
         {error ? (
           <div>{error}</div>
@@ -80,11 +80,12 @@ const Banner = () => {
             <div key={banner.id} onClick={() => handleBannerClick(banner.link)}>
               <CardMedia
                 component="img"
-                height={{ xs: 200, sm: 300, md: 400 }}
+                
                 image={getImageSrc(banner.image)}
                 alt={banner.title || "Banner"}
                 sx={{
                   width: "100%",
+                  height: { xs: 140, sm: 180, md: 260 },
                   objectFit: "cover",
                   borderRadius: { xs: 0, sm: 2, md: 2 },
                   cursor: banner.link ? "pointer" : "default",

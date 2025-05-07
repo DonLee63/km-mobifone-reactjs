@@ -14,7 +14,11 @@ import {
   ListItem,
   ListItemText,
   Chip,
+  TextField,
+  IconButton,
+  Modal,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import Header from "./Header";
 
 const PromotionDetail = () => {
@@ -23,9 +27,17 @@ const PromotionDetail = () => {
   const [promotion, setPromotion] = useState(null);
   const [contentImages, setContentImages] = useState([]);
   const [contentText, setContentText] = useState("");
-  const [otherPromotions, setOtherPromotions] = useState([]); // State mới để lưu các khuyến mãi khác
+  const [otherPromotions, setOtherPromotions] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [commentForm, setCommentForm] = useState({
+    name: "",
+    email: "",
+    content: "",
+  });
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [commentError, setCommentError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Định nghĩa URL cơ sở của API Laravel
   const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
   useEffect(() => {
@@ -44,11 +56,15 @@ const PromotionDetail = () => {
       .get("/promotions")
       .then((response) => {
         console.log("Other Promotions Response:", response.data);
-        // Lọc để loại bỏ chương trình hiện tại
-        const filteredPromotions = response.data.filter((promo) => promo.id !== parseInt(id));
+        const filteredPromotions = response.data.filter(
+          (promo) => promo.id !== parseInt(id)
+        );
         setOtherPromotions(filteredPromotions);
       })
       .catch((error) => console.error("Error fetching other promotions:", error));
+
+    // Lấy danh sách bình luận
+    fetchComments();
   }, [id]);
 
   const parseContent = (htmlContent) => {
@@ -84,15 +100,64 @@ const PromotionDetail = () => {
     setContentText(text);
   };
 
+  const fetchComments = async () => {
+    try {
+      const response = await axiosClient.get(`/comments/${id}`);
+      console.log("Comments Response:", response.data); // Debug để kiểm tra dữ liệu
+      setComments(response.data.data || []);
+    } catch (err) {
+      console.error("Error fetching comments:", err);
+      setComments([]);
+    }
+  };
+
+  const handleCommentOpen = () => setCommentOpen(true);
+  const handleCommentClose = () => {
+    setCommentOpen(false);
+    setCommentError("");
+    setCommentForm({ name: "", email: "", content: "" });
+  };
+
+  const handleCommentChange = (e) => {
+    const { name, value } = e.target;
+    setCommentForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    setCommentError("");
+    setLoading(true);
+
+    try {
+      const response = await axiosClient.post("/comments", {
+        promotion_id: id,
+        ...commentForm,
+      });
+      setLoading(false);
+      handleCommentClose();
+      fetchComments(); // Làm mới danh sách bình luận sau khi gửi thành công
+    } catch (err) {
+      setCommentError(
+        err.response?.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!"
+      );
+      setLoading(false);
+    }
+  };
+
   if (!promotion) return <Typography>Loading...</Typography>;
 
   return (
     <div>
+      <Header />
       <Box sx={{ maxWidth: 1200, margin: "0 auto", padding: "20px" }}>
         <Grid container spacing={3}>
           {/* Main Content */}
           <Grid item xs={12} md={8}>
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: "#333" }}>
+            <Typography
+              variant="h4"
+              gutterBottom
+              sx={{ fontWeight: "bold", color: "#333" }}
+            >
               {promotion.title}
             </Typography>
 
@@ -149,36 +214,22 @@ const PromotionDetail = () => {
               </Typography>
               <Box sx={{ display: "flex", gap: 2 }}>
                 <Chip
-                  label={`Bắt đầu: ${promotion.start_at ? new Date(promotion.start_at).toLocaleDateString("vi-VN") : "Không xác định"}`}
+                  label={`Bắt đầu: ${promotion.start_at
+                    ? new Date(promotion.start_at).toLocaleDateString("vi-VN")
+                    : "Không xác định"
+                    }`}
                   color="primary"
                   variant="outlined"
                 />
                 <Chip
-                  label={`Kết thúc: ${promotion.end_at ? new Date(promotion.end_at).toLocaleDateString("vi-VN") : "Không xác định"}`}
+                  label={`Kết thúc: ${promotion.end_at
+                    ? new Date(promotion.end_at).toLocaleDateString("vi-VN")
+                    : "Không xác định"
+                    }`}
                   color="error"
                   variant="outlined"
                 />
               </Box>
-            </Box>
-
-            <Divider sx={{ my: 3 }} />
-
-            <Box sx={{ mt: 3 }}>
-              <Button
-                variant="contained"
-                color="success"
-                sx={{ mr: 2 }}
-                onClick={() => alert("Copied coupon!")}
-              >
-                Copy Coupon
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => window.open("https://www.hawkhost.com", "_blank")}
-              >
-                Sign Up Now
-              </Button>
             </Box>
           </Grid>
 
@@ -202,7 +253,10 @@ const PromotionDetail = () => {
                         <ListItemText
                           primary={promo.title}
                           secondary={`Từ ${new Date(promo.start_at).toLocaleDateString("vi-VN")} đến ${new Date(promo.end_at).toLocaleDateString("vi-VN")}`}
-                          primaryTypographyProps={{ fontWeight: "bold", color: "#1976d2" }}
+                          primaryTypographyProps={{
+                            fontWeight: "bold",
+                            color: "#1976d2",
+                          }}
                           secondaryTypographyProps={{ color: "#777" }}
                         />
                       </ListItem>
@@ -216,23 +270,6 @@ const PromotionDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Thông tin bổ sung */}
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Thông tin liên quan
-                </Typography>
-                <List>
-                  <ListItem>
-                    <ListItemText primary="Đánh giá Hawk Host" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Ưu đãi tên miền" />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-
             {/* Trạng thái khuyến mãi */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
@@ -241,7 +278,9 @@ const PromotionDetail = () => {
                 </Typography>
                 <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
                   <Chip
-                    label={promotion.status === "active" ? "Đang hoạt động" : "Kết thúc"}
+                    label={
+                      promotion.status === "active" ? "Đang hoạt động" : "Kết thúc"
+                    }
                     color={promotion.status === "active" ? "success" : "default"}
                     sx={{ fontWeight: "bold" }}
                   />
@@ -253,9 +292,215 @@ const PromotionDetail = () => {
                 </Typography>
               </CardContent>
             </Card>
+
+            {/* Danh sách bình luận */}
+            <Card>
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ fontWeight: "bold", color: "#d32f2f" }}
+                >
+                  Bình luận ({comments.length})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCommentOpen}
+                  sx={{
+                    mb: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    borderColor: "#d32f2f",
+                    color: "#d32f2f",
+                    "&:hover": {
+                      background: "rgba(211, 47, 47, 0.1)",
+                      borderColor: "#b71c1c",
+                      color: "#b71c1c",
+                    },
+                  }}
+                >
+                  Viết bình luận
+                </Button>
+                {comments.length > 0 ? (
+                  <List>
+                    {comments.map((comment) => (
+                      <ListItem
+                        key={comment.id}
+                        sx={{ mb: 2, p: 2, bgcolor: "#f5f5f5", borderRadius: 2 }}
+                      >
+                        <ListItemText
+                          primary={
+                            <Typography
+                              variant="subtitle1"
+                              sx={{ fontWeight: 500, color: "#333" }}
+                            >
+                              {comment.name}{" "}
+                              <span style={{ color: "#757575" }}>
+                                ({new Date(comment.created_at).toLocaleDateString("vi-VN")})
+                              </span>
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography
+                              variant="body2"
+                              sx={{ mt: 1, color: "#555" }}
+                            >
+                              {comment.content}
+                            </Typography>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Chưa có bình luận nào.
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
       </Box>
+
+      {/* Modal bình luận */}
+      <Modal
+        open={commentOpen}
+        onClose={handleCommentClose}
+        aria-labelledby="comment-modal-title"
+        sx={{ "& .MuiBackdrop-root": { backdropFilter: "blur(2px)" } }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 600 },
+            bgcolor: "#fff",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+            p: 4,
+            borderRadius: 4,
+            overflow: "auto",
+            maxHeight: "80vh",
+            transition: "all 0.3s ease-in-out",
+            animation: "fadeIn 0.3s ease-in",
+          }}
+        >
+          <IconButton
+            onClick={handleCommentClose}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: "#d32f2f",
+              "&:hover": { color: "#b71c1c" },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography
+            id="comment-modal-title"
+            variant="h5"
+            component="h2"
+            sx={{ fontWeight: 700, mb: 3, color: "#d32f2f" }}
+          >
+            Đánh giá và bình luận
+          </Typography>
+          <Typography variant="body1" color="text.secondary" mb={3}>
+            Vui lòng điền thông tin để gửi bình luận về sản phẩm:{" "}
+            <strong>{promotion.title}</strong>
+          </Typography>
+          <form onSubmit={handleCommentSubmit}>
+            <TextField
+              fullWidth
+              label="Tên của bạn"
+              name="name"
+              value={commentForm.name}
+              onChange={handleCommentChange}
+              required
+              margin="normal"
+              size="small"
+              variant="outlined"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px",
+                  "&:hover fieldset": { borderColor: "#d32f2f" },
+                  "&.Mui-focused fieldset": { borderColor: "#d32f2f" },
+                },
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={commentForm.email}
+              onChange={handleCommentChange}
+              required
+              margin="normal"
+              size="small"
+              variant="outlined"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px",
+                  "&:hover fieldset": { borderColor: "#d32f2f" },
+                  "&.Mui-focused fieldset": { borderColor: "#d32f2f" },
+                },
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Nội dung bình luận"
+              name="content"
+              value={commentForm.content}
+              onChange={handleCommentChange}
+              required
+              multiline
+              rows={4}
+              margin="normal"
+              size="small"
+              variant="outlined"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px",
+                  "&:hover fieldset": { borderColor: "#d32f2f" },
+                  "&.Mui-focused fieldset": { borderColor: "#d32f2f" },
+                },
+              }}
+            />
+            {commentError && (
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                {commentError}
+              </Typography>
+            )}
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              fullWidth
+              sx={{
+                mt: 3,
+                py: 1.5,
+                textTransform: "none",
+                fontWeight: 700,
+                borderRadius: "10px",
+                background: "linear-gradient(45deg, #d32f2f, #f44336)",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #b71c1c, #c62828)",
+                  boxShadow: "0 6px 16px rgba(211, 47, 47, 0.4)",
+                },
+                transition: "all 0.3s ease",
+              }}
+              disabled={loading}
+            >
+              {loading ? "Đang gửi..." : "Gửi bình luận"}
+            </Button>
+          </form>
+        </Box>
+      </Modal>
     </div>
   );
 };

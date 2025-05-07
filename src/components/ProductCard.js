@@ -40,14 +40,7 @@ const ProductCard = ({ product }) => {
       : `${API_BASE_URL}${product.image}`
     : "https://via.placeholder.com/345x220?text=No+Image";
 
-  const cities = [
-    "Hà Nội",
-    "TP. Hồ Chí Minh",
-    "Đà Nẵng",
-    "Hải Phòng",
-    "Cần Thơ",
-    "Khác",
-  ];
+  const cities = ["Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Khác"];
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -95,11 +88,17 @@ const ProductCard = ({ product }) => {
         sx={{
           maxWidth: 345,
           margin: "10px",
-          boxShadow: 1,
+          boxShadow: 2,
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          borderRadius: 2,
+          borderRadius: 3,
+          transition: "all 0.3s ease",
+          "&:hover": {
+            boxShadow: 6,
+            transform: "translateY(-5px)",
+            background: "linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%)",
+          },
         }}
       >
         <CardMedia
@@ -107,7 +106,13 @@ const ProductCard = ({ product }) => {
           height="220"
           image={imageSrc}
           alt={product.title}
-          sx={{ objectFit: "cover" }}
+          sx={{
+            objectFit: "cover",
+            transition: "transform 0.3s ease",
+            "&:hover": {
+              transform: "scale(1.05)",
+            },
+          }}
         />
         <CardContent
           sx={{
@@ -116,51 +121,65 @@ const ProductCard = ({ product }) => {
             flexDirection: "column",
             justifyContent: "space-between",
             padding: "16px",
+            position: "relative", // Để sử dụng position: absolute cho lượt xem
           }}
         >
           <div>
+            {/* Tiêu đề với chiều cao cố định */}
             <Typography
               gutterBottom
               variant="h6"
               component="div"
               sx={{
-                fontSize: "1.1rem",
-                fontWeight: "bold",
-                lineHeight: 1.2,
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                lineHeight: 1.5, // Đảm bảo mỗi dòng có chiều cao cố định
+                color: "#1976d2",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                marginBottom: "8px",
+                minHeight: "3rem", // Đảm bảo chiều cao cố định (2 dòng x 1.5rem)
+                marginBottom: "12px",
               }}
             >
               {product.title}
             </Typography>
+            {/* Lượt xem ở vị trí cố định */}
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
-                mb: "8px",
+                gap: "6px",
+                fontWeight: 500,
+                position: "absolute",
+                top: "80px", // Đặt cố định vị trí ngay dưới tiêu đề
+                left: "16px", // Cùng padding với CardContent
               }}
             >
-              <VisibilityIcon sx={{ fontSize: "16px" }} />
+              <VisibilityIcon sx={{ fontSize: "18px", color: "#757575" }} />
               {product.views || 0} lượt xem
             </Typography>
           </div>
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
             <Button
               variant="contained"
-              color="success"
+              color="primary"
               size="small"
               onClick={() => navigate(`/promotion/${product.id}`)}
               sx={{
                 flex: 1,
                 textTransform: "none",
-                fontWeight: "bold",
+                fontWeight: 600,
+                borderRadius: 2,
+                background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #1565c0, #2196f3)",
+                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
+                },
               }}
             >
               Xem chi tiết
@@ -173,7 +192,15 @@ const ProductCard = ({ product }) => {
               sx={{
                 flex: 1,
                 textTransform: "none",
-                fontWeight: "bold",
+                fontWeight: 600,
+                borderRadius: 2,
+                borderColor: "#1976d2",
+                color: "#1976d2",
+                "&:hover": {
+                  background: "rgba(25, 118, 210, 0.1)",
+                  borderColor: "#1565c0",
+                  color: "#1565c0",
+                },
               }}
             >
               Liên hệ ngay
@@ -184,244 +211,11 @@ const ProductCard = ({ product }) => {
 
       {/* Modal để nhập thông tin liên hệ */}
       <Modal
-  open={open}
-  onClose={handleClose}
-  aria-labelledby="contact-modal-title"
-  aria-describedby="contact-modal-description"
->
-  <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: { xs: "90%", sm: 700 }, // Tăng chiều rộng tổng thể của modal
-      bgcolor: "background.paper",
-      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-      borderRadius: 3,
-      overflow: "hidden",
-      transition: "all 0.3s ease-in-out",
-    }}
-  >
-    <Grid container>
-      {/* Cột hình ảnh bên trái */}
-      <Grid
-        item
-        xs={12}
-        sm={6} // Tăng chiều rộng từ sm={5} lên sm={6}
-        sx={{
-          display: { xs: "none", sm: "block" },
-          bgcolor: "#f5f5f5",
-        }}
-      >
-        <Box
-          sx={{
-            height: "100%",
-            width: "100%", // Đảm bảo Box chiếm hết chiều rộng
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            p: 2,
-          }}
-        >
-          <img
-            src="https://api.mobifone.vn/images/article/1744941873637_simso-mobifone-voucher-2tr.jpg"
-            alt="Contact Illustration"
-            style={{
-              width: "100%", // Đảm bảo hình ảnh chiếm hết chiều rộng của Box
-              height: "100%", // Giữ chiều cao đầy đủ
-              objectFit: "cover", // Hình ảnh vẫn lấp đầy không gian
-              borderRadius: "8px",
-            }}
-          />
-        </Box>
-      </Grid>
-      {/* Cột form bên phải */}
-      <Grid item xs={12} sm={6}> {/* Giảm chiều rộng từ sm={7} xuống sm={6} */}
-        <Box sx={{ p: 4, position: "relative" }}>
-          <IconButton
-            onClick={handleClose}
-            sx={{ position: "absolute", top: 8, right: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Typography
-            id="contact-modal-title"
-            variant="h6"
-            component="h2"
-            sx={{ fontWeight: "bold", mb: 1 }}
-          >
-            Liên hệ nhận tư vấn
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Vui lòng điền thông tin để nhận tư vấn về sản phẩm:{" "}
-            <strong>{product.title}</strong>
-          </Typography>
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Họ và tên"
-              name="full_name"
-              value={formData.full_name}
-              onChange={handleChange}
-              required
-              margin="normal"
-              size="small"
-              variant="outlined"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  "&:hover fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                },
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              margin="normal"
-              size="small"
-              variant="outlined"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  "&:hover fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                },
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Số điện thoại"
-              name="phone_number"
-              value={formData.phone_number}
-              onChange={handleChange}
-              required
-              margin="normal"
-              size="small"
-              variant="outlined"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  "&:hover fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                },
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Thành phố"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              required
-              margin="normal"
-              size="small"
-              autoComplete="off"
-              variant="outlined"
-              InputProps={{
-                autoComplete: "new-city",
-                list: "cities",
-              }}
-              inputProps={{
-                list: "cities",
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  "&:hover fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                },
-              }}
-            />
-            <datalist id="cities">
-              {cities.map((city) => (
-                <option key={city} value={city} />
-              ))}
-            </datalist>
-            <TextField
-              fullWidth
-              label="Ghi chú"
-              name="note"
-              value={formData.note}
-              onChange={handleChange}
-              multiline
-              rows={3}
-              margin="normal"
-              size="small"
-              variant="outlined"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  "&:hover fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1976d2",
-                  },
-                },
-              }}
-            />
-            {error && (
-              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-                {error}
-              </Typography>
-            )}
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{
-                mt: 3,
-                py: 1.5,
-                textTransform: "none",
-                fontWeight: "bold",
-                borderRadius: "8px",
-                backgroundColor: "#1976d2",
-                "&:hover": {
-                  backgroundColor: "#1565c0",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                },
-                transition: "all 0.3s ease",
-              }}
-              disabled={loading}
-            >
-              {loading ? "Đang gửi..." : "Gửi thông tin"}
-            </Button>
-          </form>
-        </Box>
-      </Grid>
-    </Grid>
-  </Box>
-</Modal>
-
-      {/* Modal cảm ơn */}
-      <Modal
-        open={thankYouOpen}
-        onClose={handleThankYouClose}
-        aria-labelledby="thank-you-modal-title"
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="contact-modal-title"
+        aria-describedby="contact-modal-description"
+        sx={{ "& .MuiBackdrop-root": { backdropFilter: "blur(2px)" } }}
       >
         <Box
           sx={{
@@ -429,27 +223,254 @@ const ProductCard = ({ product }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 400 },
-            bgcolor: "background.paper",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-            p: 4,
-            borderRadius: 3,
-            textAlign: "center",
+            width: { xs: "90%", sm: 800 },
+            bgcolor: "#fff",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+            borderRadius: 4,
+            overflow: "hidden",
             transition: "all 0.3s ease-in-out",
+            animation: "fadeIn 0.3s ease-in",
           }}
         >
-          <CheckCircleIcon
-            sx={{ fontSize: 60, color: "success.main", mb: 2 }}
-          />
+          <Grid container>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              sx={{
+                display: { xs: "none", sm: "block" },
+                bgcolor: "linear-gradient(135deg, #1976d2, #42a5f5)",
+                position: "relative",
+              }}
+            >
+              <Box
+                sx={{
+                  height: "100%",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  p: 2,
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0.3)",
+                    zIndex: 1,
+                  },
+                }}
+              >
+                <img
+                  src="https://api.mobifone.vn/images/article/1744941873637_simso-mobifone-voucher-2tr.jpg"
+                  alt="Contact Illustration"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "8px 0 0 8px",
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ p: 4, position: "relative", bgcolor: "#f9f9f9" }}>
+                <IconButton
+                  onClick={handleClose}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "#1976d2",
+                    "&:hover": { color: "#1565c0" },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+                <Typography
+                  id="contact-modal-title"
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}
+                >
+                  Liên hệ nhận tư vấn
+                </Typography>
+                <Typography variant="body1" color="text.secondary" mb={3}>
+                  Vui lòng điền thông tin để nhận tư vấn về sản phẩm:{" "}
+                  <strong>{product.title}</strong>
+                </Typography>
+                <form onSubmit={handleSubmit}>
+                  <TextField
+                    fullWidth
+                    label="Họ và tên"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    required
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Số điện thoại"
+                    name="phone_number"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    required
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Thành phố"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    required
+                    margin="normal"
+                    size="small"
+                    autoComplete="off"
+                    variant="outlined"
+                    InputProps={{ autoComplete: "new-city", list: "cities" }}
+                    inputProps={{ list: "cities" }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <datalist id="cities">
+                    {cities.map((city) => (
+                      <option key={city} value={city} />
+                    ))}
+                  </datalist>
+                  <TextField
+                    fullWidth
+                    label="Ghi chú"
+                    name="note"
+                    value={formData.note}
+                    onChange={handleChange}
+                    multiline
+                    rows={3}
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  {error && (
+                    <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                      {error}
+                    </Typography>
+                  )}
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{
+                      mt: 3,
+                      py: 1.5,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderRadius: "10px",
+                      background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+                      "&:hover": {
+                        background: "linear-gradient(45deg, #1565c0, #2196f3)",
+                        boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? "Đang gửi..." : "Gửi thông tin"}
+                  </Button>
+                </form>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
+
+      {/* Modal cảm ơn */}
+      <Modal
+        open={thankYouOpen}
+        onClose={handleThankYouClose}
+        aria-labelledby="thank-you-modal-title"
+        sx={{ "& .MuiBackdrop-root": { backdropFilter: "blur(2px)" } }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 450 },
+            bgcolor: "#fff",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+            p: 4,
+            borderRadius: 4,
+            textAlign: "center",
+            transition: "all 0.3s ease-in-out",
+            background: "linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%)",
+            animation: "fadeIn 0.3s ease-in",
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: 80, color: "success.main", mb: 3 }} />
           <Typography
             id="thank-you-modal-title"
-            variant="h5"
+            variant="h4"
             component="h2"
-            sx={{ fontWeight: "bold", mb: 1 }}
+            sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}
           >
-            Cảm ơn bạn đã liên hệ!
+            Cảm ơn bạn!
           </Typography>
-          <Typography variant="body1" color="text.secondary" mb={3}>
+          <Typography variant="body1" color="text.secondary" mb={4}>
             Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
           </Typography>
           <Button
@@ -458,14 +479,15 @@ const ProductCard = ({ product }) => {
             onClick={handleThankYouClose}
             sx={{
               textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: "8px",
-              py: 1,
-              backgroundColor: "#1976d2",
+              fontWeight: 700,
+              borderRadius: "10px",
+              py: 1.5,
+              background: "linear-gradient(45deg, #1976d2, #42a5f5)",
               "&:hover": {
-                backgroundColor: "#1565c0",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                background: "linear-gradient(45deg, #1565c0, #2196f3)",
+                boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
               },
+              transition: "all 0.3s ease",
             }}
           >
             Đóng

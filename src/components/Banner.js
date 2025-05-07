@@ -26,7 +26,7 @@ const Banner = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      const activeBanners = data.filter(banner => banner.status === "active");
+      const activeBanners = data.filter((banner) => banner.status === "active");
       const shuffled = activeBanners.sort(() => 0.5 - Math.random());
       const selectedBanners = shuffled.slice(0, 4);
       setBanners(selectedBanners);
@@ -39,12 +39,11 @@ const Banner = () => {
   // Xử lý đường dẫn ảnh
   const getImageSrc = (image) => {
     if (!image) {
-      return "https://via.placeholder.com/1200x400?text=No+Image"; // Ảnh mặc định
+      return "https://via.placeholder.com/1920x600?text=No+Image";
     }
     if (image.startsWith("http")) {
-      return image; // Nếu đã là URL tuyệt đối
+      return image;
     }
-    // Đảm bảo có dấu / giữa API_BASE_URL và image
     return `${API_BASE_URL}/${image.startsWith("/") ? image.slice(1) : image}`;
   };
 
@@ -54,6 +53,47 @@ const Banner = () => {
     }
   };
 
+  // Custom arrows - Đặt trước settings
+  const SampleNextArrow = (props) => {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className={className}
+        style={{
+          ...style,
+          display: "block",
+          background: "rgba(0, 0, 0, 0.5)",
+          borderRadius: "50%",
+          width: "40px",
+          height: "40px",
+          right: "20px",
+        }}
+        onClick={onClick}
+      />
+    );
+  };
+
+  const SamplePrevArrow = (props) => {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className={className}
+        style={{
+          ...style,
+          display: "block",
+          background: "rgba(0, 0, 0, 0.5)",
+          borderRadius: "50%",
+          width: "40px",
+          height: "40px",
+          left: "20px",
+          zIndex: 1,
+        }}
+        onClick={onClick}
+      />
+    );
+  };
+
+  // Settings được đặt sau khi khai báo SampleNextArrow và SamplePrevArrow
   const settings = {
     dots: true,
     infinite: true,
@@ -63,6 +103,8 @@ const Banner = () => {
     autoplay: true,
     autoplaySpeed: 3000,
     arrows: true,
+    nextArrow: <SampleNextArrow />,
+    prevArrow: <SamplePrevArrow />,
     responsive: [
       { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1, arrows: false } },
       { breakpoint: 960, settings: { slidesToShow: 1, slidesToScroll: 1, arrows: true } },
@@ -71,7 +113,16 @@ const Banner = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1300, margin: "0 auto", padding: { xs: "0", sm: "0", md: "0" }, marginTop: { xs: "8px", sm: "16px", md: "24px" }, }}>
+    <Box
+      sx={{
+        width: "100%",
+        margin: 0,
+        padding: 0,
+        position: "relative",
+        background: "linear-gradient(90deg, #1e3c72, #2a5298)",
+        overflow: "hidden",
+      }}
+    >
       <Slider {...settings}>
         {error ? (
           <div>{error}</div>
@@ -80,14 +131,13 @@ const Banner = () => {
             <div key={banner.id} onClick={() => handleBannerClick(banner.link)}>
               <CardMedia
                 component="img"
-                
                 image={getImageSrc(banner.image)}
                 alt={banner.title || "Banner"}
                 sx={{
                   width: "100%",
-                  height: { xs: 140, sm: 180, md: 260 },
-                  objectFit: "cover",
-                  borderRadius: { xs: 0, sm: 2, md: 2 },
+                  height: "auto",
+                  minHeight: { xs: 200, sm: 300, md: 400 },
+                  objectFit: "contain",
                   cursor: banner.link ? "pointer" : "default",
                 }}
               />

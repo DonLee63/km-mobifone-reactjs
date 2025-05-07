@@ -150,7 +150,6 @@ const PromotionDetail = () => {
         promotion_id: id,
         ...commentForm,
       });
-      // Lưu thông tin name và email vào localStorage
       localStorage.setItem("commenterName", commentForm.name);
       localStorage.setItem("commenterEmail", commentForm.email);
       setLoading(false);
@@ -168,53 +167,60 @@ const PromotionDetail = () => {
 
   // Component để hiển thị bình luận và các trả lời lồng ghép
   const RenderComment = ({ comment, level = 0 }) => (
-    <ListItem
+    <Box
       sx={{
         mb: 1,
-        p: 2,
-        bgcolor: level % 2 === 0 ? "#f5f5f5" : "#e0e0e0",
-        borderRadius: 2,
-        pl: level * 2 + 2, // Thụt lề cho các bình luận con
+        borderLeft: level > 0 ? `2px solid #d32f2f` : "none", // Đường viền bên trái cho bình luận con
+        pl: level * 3, // Thụt lề cho các bình luận con
       }}
     >
-      <ListItemText
-        primary={
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, color: "#333" }}>
-            {comment.name}{" "}
-            <span style={{ color: "#757575" }}>
-              ({new Date(comment.created_at).toLocaleDateString("vi-VN")})
-            </span>
-          </Typography>
-        }
-        secondary={
-          <>
-            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
-              {comment.content}
+      <ListItem
+        sx={{
+          bgcolor: level % 2 === 0 ? "#f5f5f5" : "#e0e0e0",
+          borderRadius: 2,
+          py: 1,
+          px: 2,
+        }}
+      >
+        <ListItemText
+          primary={
+            <Typography variant="subtitle1" sx={{ fontWeight: 500, color: "#333" }}>
+              {comment.name}{" "}
+              <span style={{ color: "#757575" }}>
+                ({new Date(comment.created_at).toLocaleDateString("vi-VN")})
+              </span>
             </Typography>
-            <Button
-              startIcon={<ReplyIcon />}
-              size="small"
-              sx={{ mt: 1, color: "#d32f2f", textTransform: "none" }}
-              onClick={() => handleCommentOpen(comment.id)}
-            >
-              Trả lời
-            </Button>
-            {comment.replies && comment.replies.length > 0 && (
-              <List sx={{ mt: 1 }}>
-                {comment.replies.map((reply) => (
-                  <RenderComment key={reply.id} comment={reply} level={level + 1} />
-                ))}
-              </List>
-            )}
-          </>
-        }
-      />
-    </ListItem>
+          }
+          secondary={
+            <Box>
+              <Typography variant="body2" sx={{ mt: 0.5, color: "#555" }}>
+                {comment.content}
+              </Typography>
+              <Button
+                startIcon={<ReplyIcon />}
+                size="small"
+                sx={{ mt: 1, color: "#d32f2f", textTransform: "none" }}
+                onClick={() => handleCommentOpen(comment.id)}
+              >
+                Trả lời
+              </Button>
+            </Box>
+          }
+        />
+      </ListItem>
+      {comment.replies && comment.replies.length > 0 && (
+        <Box sx={{ mt: 1 }}>
+          {comment.replies.map((reply) => (
+            <RenderComment key={reply.id} comment={reply} level={level + 1} />
+          ))}
+        </Box>
+      )}
+    </Box>
   );
 
   return (
     <div>
-      <Header />
+      {/* <Header /> */}
       <Box sx={{ maxWidth: 1200, margin: "0 auto", padding: "20px" }}>
         <Grid container spacing={3}>
           {/* Main Content */}

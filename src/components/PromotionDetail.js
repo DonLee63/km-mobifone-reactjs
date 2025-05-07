@@ -19,6 +19,7 @@ import {
   Modal,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import ReplyIcon from "@mui/icons-material/Reply";
 import Header from "./Header";
 
 const PromotionDetail = () => {
@@ -33,6 +34,7 @@ const PromotionDetail = () => {
     name: "",
     email: "",
     content: "",
+    parent_id: null,
   });
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentError, setCommentError] = useState("");
@@ -40,7 +42,18 @@ const PromotionDetail = () => {
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+  // Lấy thông tin từ localStorage khi component mount
   useEffect(() => {
+    const savedName = localStorage.getItem("commenterName");
+    const savedEmail = localStorage.getItem("commenterEmail");
+    if (savedName && savedEmail) {
+      setCommentForm((prev) => ({
+        ...prev,
+        name: savedName,
+        email: savedEmail,
+      }));
+    }
+
     // Lấy chi tiết chương trình khuyến mãi hiện tại
     axiosClient
       .get(`/promotions/${id}`)
@@ -103,7 +116,7 @@ const PromotionDetail = () => {
   const fetchComments = async () => {
     try {
       const response = await axiosClient.get(`/comments/${id}`);
-      console.log("Comments Response:", response.data); // Debug để kiểm tra dữ liệu
+      console.log("Comments Response:", response.data);
       setComments(response.data.data || []);
     } catch (err) {
       console.error("Error fetching comments:", err);
@@ -111,11 +124,15 @@ const PromotionDetail = () => {
     }
   };
 
-  const handleCommentOpen = () => setCommentOpen(true);
+  const handleCommentOpen = (parentId = null) => {
+    setCommentForm((prev) => ({ ...prev, parent_id: parentId }));
+    setCommentOpen(true);
+  };
+
   const handleCommentClose = () => {
     setCommentOpen(false);
     setCommentError("");
-    setCommentForm({ name: "", email: "", content: "" });
+    setCommentForm((prev) => ({ ...prev, content: "", parent_id: null }));
   };
 
   const handleCommentChange = (e) => {
@@ -133,9 +150,12 @@ const PromotionDetail = () => {
         promotion_id: id,
         ...commentForm,
       });
+      // Lưu thông tin name và email vào localStorage
+      localStorage.setItem("commenterName", commentForm.name);
+      localStorage.setItem("commenterEmail", commentForm.email);
       setLoading(false);
       handleCommentClose();
-      fetchComments(); // Làm mới danh sách bình luận sau khi gửi thành công
+      fetchComments();
     } catch (err) {
       setCommentError(
         err.response?.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!"
@@ -145,6 +165,52 @@ const PromotionDetail = () => {
   };
 
   if (!promotion) return <Typography>Loading...</Typography>;
+
+  // Component để hiển thị bình luận và các trả lời lồng ghép
+  const RenderComment = ({ comment, level = 0 }) => (
+    <ListItem
+      sx={{
+        mb: 1,
+        p: 2,
+        bgcolor: level % 2 === 0 ? "#f5f5f5" : "#e0e0e0",
+        borderRadius: 2,
+        pl: level * 2 + 2, // Thụt lề cho các bình luận con
+      }}
+    >
+      <ListItemText
+        primary={
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, color: "#333" }}>
+            {comment.name}{" "}
+            <span style={{ color: "#757575" }}>
+              ({new Date(comment.created_at).toLocaleDateString("vi-VN")})
+            </span>
+          </Typography>
+        }
+        secondary={
+          <>
+            <Typography variant="body2" sx={{ mt: 1, color: "#555" }}>
+              {comment.content}
+            </Typography>
+            <Button
+              startIcon={<ReplyIcon />}
+              size="small"
+              sx={{ mt: 1, color: "#d32f2f", textTransform: "none" }}
+              onClick={() => handleCommentOpen(comment.id)}
+            >
+              Trả lời
+            </Button>
+            {comment.replies && comment.replies.length > 0 && (
+              <List sx={{ mt: 1 }}>
+                {comment.replies.map((reply) => (
+                  <RenderComment key={reply.id} comment={reply} level={level + 1} />
+                ))}
+              </List>
+            )}
+          </>
+        }
+      />
+    </ListItem>
+  );
 
   return (
     <div>
@@ -306,7 +372,7 @@ const PromotionDetail = () => {
                 <Button
                   variant="outlined"
                   color="secondary"
-                  onClick={handleCommentOpen}
+                  onClick={() => handleCommentOpen(null)}
                   sx={{
                     mb: 2,
                     textTransform: "none",
@@ -326,32 +392,7 @@ const PromotionDetail = () => {
                 {comments.length > 0 ? (
                   <List>
                     {comments.map((comment) => (
-                      <ListItem
-                        key={comment.id}
-                        sx={{ mb: 2, p: 2, bgcolor: "#f5f5f5", borderRadius: 2 }}
-                      >
-                        <ListItemText
-                          primary={
-                            <Typography
-                              variant="subtitle1"
-                              sx={{ fontWeight: 500, color: "#333" }}
-                            >
-                              {comment.name}{" "}
-                              <span style={{ color: "#757575" }}>
-                                ({new Date(comment.created_at).toLocaleDateString("vi-VN")})
-                              </span>
-                            </Typography>
-                          }
-                          secondary={
-                            <Typography
-                              variant="body2"
-                              sx={{ mt: 1, color: "#555" }}
-                            >
-                              {comment.content}
-                            </Typography>
-                          }
-                        />
-                      </ListItem>
+                      <RenderComment key={comment.id} comment={comment} />
                     ))}
                   </List>
                 ) : (
@@ -407,10 +448,10 @@ const PromotionDetail = () => {
             component="h2"
             sx={{ fontWeight: 700, mb: 3, color: "#d32f2f" }}
           >
-            Đánh giá và bình luận
+            {commentForm.parent_id ? "Trả lời bình luận" : "Đánh giá và bình luận"}
           </Typography>
           <Typography variant="body1" color="text.secondary" mb={3}>
-            Vui lòng điền thông tin để gửi bình luận về sản phẩm:{" "}
+            Vui lòng điền thông tin để {commentForm.parent_id ? "trả lời" : "gửi bình luận về sản phẩm"}:{" "}
             <strong>{promotion.title}</strong>
           </Typography>
           <form onSubmit={handleCommentSubmit}>

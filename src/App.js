@@ -6,7 +6,8 @@ import Banner from "./components/Banner";
 import Footer from "./components/Footer";
 import ProductGrid from "./components/ProductGrid";
 import PromotionDetail from "./components/PromotionDetail";
-import SearchResults from "./components/SearchResults"; // Import trang SearchResults
+import SearchResults from "./components/SearchResults";
+import PromotionsByCategory from "./components/PromotionsByCategory"; // Import trang mới
 
 function App() {
   const [promotions, setPromotions] = useState([]); // Đảm bảo khởi tạo là mảng rỗng
@@ -35,7 +36,8 @@ function App() {
         <Routes>
           <Route path="/" element={<><Banner /><ProductGrid promotions={promotions} /></>} />
           <Route path="/promotion/:id" element={<PromotionDetail />} />
-          <Route path="/search" element={<SearchResults />} /> {/* Thêm route cho tìm kiếm */}
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/promotions" element={<PromotionsByCategory />} /> {/* Thêm route mới */}
         </Routes>
         <Footer />
       </div>

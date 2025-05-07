@@ -13,6 +13,8 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  Grid,
+  Box,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -26,20 +28,14 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import axiosClient from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 
-// const StyledToolbar = styled(Toolbar)({
-//   display: "flex",
-//   justifyContent: "space-between",
-//   alignItems: "center",
-//   padding: "0 16px",
-// });
 const StyledToolbar = styled(Toolbar)({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "0 32px", // Tăng padding hai bên để tạo khoảng cách
-  maxWidth: "1355px", // Giới hạn chiều rộng của header (có thể thay đổi giá trị này)
+  padding: "0 32px",
+  maxWidth: "1355px",
   width: "100%",
-  margin: "0 auto", // Căn giữa header
+  margin: "0 auto",
   height: "80px",
 });
 
@@ -88,24 +84,72 @@ const LogoContainer = styled("div")({
   },
 });
 
+const CategoryMenuItem = styled(MenuItem)(({ theme }) => ({
+  padding: "12px 24px",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+}));
+
+const ProductList = styled(List)(({ theme }) => ({
+  padding: "8px 24px",
+  maxHeight: "400px",
+  overflowY: "auto",
+}));
+
+const ProductItem = styled(ListItem)(({ theme }) => ({
+  padding: "8px 0",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    cursor: "pointer",
+  },
+}));
+
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [solutions, setSolutions] = useState([]);
+  const [categories, setCategories] = useState([]); // Danh sách danh mục
+  const [categoryProducts, setCategoryProducts] = useState([]); // Sản phẩm/dịch vụ của danh mục được hover
+  const [selectedCategory, setSelectedCategory] = useState(null); // Danh mục đang được hover
   const [anchorEl, setAnchorEl] = useState(null);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // State để lưu từ khóa tìm kiếm
+  const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useMediaQuery("(max-width: 768px)");
   const navigate = useNavigate();
 
+  // Lấy danh sách danh mục
   useEffect(() => {
     axiosClient
-      .get("/promotions?category_id=2")
+      .get("/promotion-categories")
       .then((response) => {
-        console.log("Solutions Response:", response.data);
-        setSolutions(response.data);
+        console.log("Categories Response:", response.data);
+        setCategories(response.data);
       })
-      .catch((error) => console.error("Error fetching solutions:", error));
+      .catch((error) => console.error("Error fetching categories:", error));
   }, []);
+
+  // Đặt danh mục mặc định khi dropdown mở
+  useEffect(() => {
+    if (anchorEl && categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0]); // Đặt danh mục đầu tiên làm mặc định
+    }
+  }, [anchorEl, categories, selectedCategory]);
+
+  // Lấy sản phẩm/dịch vụ khi hover vào danh mục
+  useEffect(() => {
+    if (selectedCategory) {
+      axiosClient
+        .get(`/promotions?category_id=${selectedCategory.id}`)
+        .then((response) => {
+          console.log("Category Products Response:", response.data);
+          setCategoryProducts(response.data.slice(0, 7)); // Giới hạn 7 sản phẩm
+        })
+        .catch((error) =>
+          console.error("Error fetching category products:", error)
+        );
+    } else {
+      setCategoryProducts([]); // Xóa danh sách sản phẩm khi không có danh mục được chọn
+    }
+  }, [selectedCategory]);
 
   const toggleDrawer = (open) => () => {
     setMobileOpen(open);
@@ -117,10 +161,21 @@ const Header = () => {
 
   const handleSolutionsClose = () => {
     setAnchorEl(null);
+    setSelectedCategory(null); // Xóa danh mục được chọn khi đóng menu
   };
 
-  const handleSolutionSelect = (id) => {
+  const handleCategoryHover = (category) => {
+    setSelectedCategory(category); // Cập nhật danh mục đang được hover
+  };
+
+  const handleProductClick = (id) => {
     navigate(`/promotion/${id}`);
+    handleSolutionsClose();
+  };
+
+  const handleLearnMore = (categoryId) => {
+    console.log("Navigating to category:", categoryId);
+    navigate(`/promotions?category_id=${categoryId}`);
     handleSolutionsClose();
   };
 
@@ -132,16 +187,15 @@ const Header = () => {
     navigate("/");
   };
 
-  // Xử lý tìm kiếm
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      navigate(`/search?query=${encodeURIComponent(searchQuery)}`); // Điều hướng đến trang tìm kiếm
+      navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
-      handleSearch(); // Gọi tìm kiếm khi nhấn Enter
+      handleSearch();
     }
   };
 
@@ -152,15 +206,18 @@ const Header = () => {
       sx={{
         bgcolor: "#1976d2",
         color: "#fff",
-        // 
-        height: "80px", // Đặt chiều cao cụ thể cho header (có thể thay đổi giá trị này)
+        height: "80px",
         display: "flex",
-        alignItems: "center", // Căn giữa nội dung theo chiều dọc
+        alignItems: "center",
       }}
     >
       <StyledToolbar>
         {isMobile && (
-          <IconButton edge="start" onClick={toggleDrawer(true)} sx={{ color: "#fff" }}>
+          <IconButton
+            edge="start"
+            onClick={toggleDrawer(true)}
+            sx={{ color: "#fff" }}
+          >
             <MenuIcon />
           </IconButton>
         )}
@@ -188,7 +245,7 @@ const Header = () => {
                 onClick={handleSolutionsClick}
                 endIcon={anchorEl ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               >
-                Giải pháp số
+                Sản phẩm & Dịch vụ
               </StyledButton>
               <Menu
                 anchorEl={anchorEl}
@@ -200,22 +257,67 @@ const Header = () => {
                     color: "#fff",
                     borderRadius: "10px",
                     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                    width: "600px",
+                    maxHeight: "500px",
+                    overflow: "hidden",
                   },
                 }}
               >
-                {solutions.map((solution) => (
-                  <MenuItem
-                    key={solution.id}
-                    onClick={() => handleSolutionSelect(solution.id)}
-                    sx={{
-                      "&:hover": {
-                        bgcolor: "rgba(255, 255, 255, 0.1)",
-                      },
-                    }}
+                <Grid container>
+                  {/* Cột trái: Danh sách danh mục */}
+                  <Grid
+                    item
+                    xs={4}
+                    sx={{ borderRight: "1px solid rgba(255, 255, 255, 0.2)" }}
                   >
-                    {solution.title}
-                  </MenuItem>
-                ))}
+                    {categories.map((category) => (
+                      <CategoryMenuItem
+                        key={category.id}
+                        onMouseEnter={() => handleCategoryHover(category)}
+                      >
+                        <Typography variant="body1">{category.title}</Typography>
+                      </CategoryMenuItem>
+                    ))}
+                  </Grid>
+                  {/* Cột phải: Sản phẩm/dịch vụ của danh mục được hover */}
+                  <Grid item xs={8}>
+                    {selectedCategory ? (
+                      <Box sx={{ p: 2 }}>
+                        <ProductList>
+                          {categoryProducts.map((product, index) => (
+                            <ProductItem
+                              key={product.id}
+                              onClick={() => handleProductClick(product.id)}
+                            >
+                              <Typography variant="body2">
+                                {index + 1}. {product.title}
+                              </Typography>
+                            </ProductItem>
+                          ))}
+                        </ProductList>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleLearnMore(selectedCategory.id)}
+                          sx={{
+                            mt: 2,
+                            ml: 2,
+                            textTransform: "none",
+                            borderRadius: "20px",
+                          }}
+                        >
+                          Tìm hiểu thêm
+                        </Button>
+                      </Box>
+                    ) : (
+                      <Box sx={{ p: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Vui lòng chọn một danh mục để xem các giải pháp.
+                        </Typography>
+                      </Box>
+                    )}
+                  </Grid>
+                </Grid>
               </Menu>
             </div>
             <StyledButton onClick={() => navigate("/news")}>
@@ -231,14 +333,14 @@ const Header = () => {
               inputProps={{ "aria-label": "search" }}
               sx={{ ml: 1, flex: 1, color: "#333" }}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} // Cập nhật từ khóa
-              onKeyPress={handleKeyPress} // Xử lý khi nhấn Enter
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
             <IconButton
               type="button"
               aria-label="search"
               sx={{ color: "#1976d2" }}
-              onClick={handleSearch} // Xử lý khi nhấp vào icon
+              onClick={handleSearch}
             >
               <SearchIcon />
             </IconButton>
@@ -258,10 +360,7 @@ const Header = () => {
             </IconButton>
           </ListItem>
           <ListItem button onClick={() => navigate("/promotions")}>
-            <ListItemText primary="Khuyến mại" />
-          </ListItem>
-          <ListItem button onClick={() => navigate("/services")}>
-            <ListItemText primary="Dịch vụ" />
+            <ListItemText primary="Giới thiệu" />
           </ListItem>
           <ListItem button onClick={() => navigate("/packages")}>
             <ListItemText primary="Gói cước" />
@@ -274,22 +373,22 @@ const Header = () => {
           </ListItem>
           {solutionsOpen && (
             <List sx={{ pl: 4 }}>
-              {solutions.map((solution) => (
+              {categories.map((category) => (
                 <ListItem
                   button
-                  key={solution.id}
+                  key={category.id}
                   onClick={() => {
-                    navigate(`/promotion/${solution.id}`);
+                    navigate(`/promotions?category_id=${category.id}`);
                     toggleDrawer(false)();
                   }}
                 >
-                  <ListItemText primary={solution.title} />
+                  <ListItemText primary={category.title} />
                 </ListItem>
               ))}
             </List>
           )}
           <ListItem button onClick={() => navigate("/news")}>
-            <ListItemText primary="Tin tức" />
+            <ListItemText primary="Hỗ trợ" />
           </ListItem>
         </List>
       </Drawer>

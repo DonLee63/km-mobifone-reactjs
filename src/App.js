@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "./api/axiosClient";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Banner from "./components/Banner";
 import Footer from "./components/Footer";
 import ProductGrid from "./components/ProductGrid";
 import PromotionDetail from "./components/PromotionDetail";
 import SearchResults from "./components/SearchResults";
-import PromotionsByCategory from "./components/PromotionsByCategory"; // Import trang mới
+import PromotionsByCategory from "./components/PromotionsByCategory";
+import IntroductionPage from "./components/IntroductionPage";
+import SupportPage from "./components/SupportPage";
 
 function App() {
   const [promotions, setPromotions] = useState([]); // Đảm bảo khởi tạo là mảng rỗng
@@ -32,14 +34,17 @@ function App() {
   return (
     <Router>
       <div>
-        <Header />
+        <Header /> {/* Đặt Header bên ngoài Routes */}
         <Routes>
           <Route path="/" element={<><Banner /><ProductGrid promotions={promotions} /></>} />
           <Route path="/promotion/:id" element={<PromotionDetail />} />
           <Route path="/search" element={<SearchResults />} />
-          <Route path="/promotions" element={<PromotionsByCategory />} /> {/* Thêm route mới */}
+          <Route path="/promotions" element={<PromotionsByCategory />} />
+          <Route path="/about" element={<IntroductionPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          {/* Các route khác nếu có */}
         </Routes>
-        <Footer />
+        <Footer /> {/* Đặt Footer bên ngoài Routes */}
       </div>
     </Router>
   );

@@ -234,11 +234,11 @@ const Header = () => {
 
         {!isMobile && (
           <MenuButtons>
-            <StyledButton onClick={() => navigate("/promotions")}>
+            <StyledButton onClick={() => navigate("/about")}>
               Giới thiệu
             </StyledButton>
             <StyledButton onClick={() => navigate("/packages")}>
-              Gói cước
+             Tin tức
             </StyledButton>
             <div>
               <StyledButton
@@ -320,7 +320,7 @@ const Header = () => {
                 </Grid>
               </Menu>
             </div>
-            <StyledButton onClick={() => navigate("/news")}>
+            <StyledButton onClick={() => navigate("/support")}>
               Hỗ trợ
             </StyledButton>
           </MenuButtons>
@@ -387,7 +387,7 @@ const Header = () => {
               ))}
             </List>
           )}
-          <ListItem button onClick={() => navigate("/news")}>
+          <ListItem button onClick={() => navigate("/support")}>
             <ListItemText primary="Hỗ trợ" />
           </ListItem>
         </List>

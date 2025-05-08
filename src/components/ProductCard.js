@@ -4,7 +4,7 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  Button,
+  Button, // Thêm Button vào đây
   Modal,
   Box,
   TextField,
@@ -38,7 +38,7 @@ const ProductCard = ({ product }) => {
     ? product.image.startsWith("http")
       ? product.image
       : `${API_BASE_URL}${product.image}`
-    : "https://via.placeholder.com/345x220?text=No+Image";
+    : "https://via.placeholder.com/300x200?text=No+Image";
 
   const cities = ["Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Khác"];
 
@@ -86,126 +86,66 @@ const ProductCard = ({ product }) => {
     <>
       <Card
         sx={{
-          maxWidth: 345,
-          margin: "10px",
-          boxShadow: 2,
           display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          borderRadius: 3,
+          boxShadow: 2,
+          borderRadius: 2,
+          overflow: "hidden",
           transition: "all 0.3s ease",
           "&:hover": {
             boxShadow: 6,
             transform: "translateY(-5px)",
             background: "linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%)",
           },
+          cursor: "pointer", // Thêm con trỏ để chỉ ra card có thể nhấp
         }}
       >
+        {/* Hình ảnh bên trái, nhấp để điều hướng */}
         <CardMedia
           component="img"
-          height="220"
+          sx={{ width: { xs: "100%", sm: 300 }, height: 200, objectFit: "cover" }}
           image={imageSrc}
           alt={product.title}
-          sx={{
-            objectFit: "cover",
-            transition: "transform 0.3s ease",
-            "&:hover": {
-              transform: "scale(1.05)",
-            },
-          }}
+          onClick={() => navigate(`/promotion/${product.id}`)}
         />
-        <CardContent
-          sx={{
-            flexGrow: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "16px",
-            position: "relative", // Để sử dụng position: absolute cho lượt xem
-          }}
-        >
-          <div>
-            {/* Tiêu đề với chiều cao cố định */}
-            <Typography
-              gutterBottom
-              variant="h6"
-              component="div"
-              sx={{
-                fontSize: "1.2rem",
-                fontWeight: 700,
-                lineHeight: 1.5, // Đảm bảo mỗi dòng có chiều cao cố định
-                color: "#1976d2",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                minHeight: "3rem", // Đảm bảo chiều cao cố định (2 dòng x 1.5rem)
-                marginBottom: "12px",
-              }}
-            >
-              {product.title}
+        {/* Nội dung bên phải */}
+        <CardContent sx={{ flex: 1, padding: 3 }}>
+          <Typography
+            variant="h6"
+            component="h2"
+            sx={{ fontWeight: 700, color: "#1976d2", marginBottom: 1, cursor: "pointer" }}
+            onClick={() => navigate(`/promotion/${product.id}`)}
+          >
+            {product.title}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ marginRight: 2 }}>
+              {product.created_at
+                ? new Date(product.created_at).toLocaleDateString("vi-VN")
+                : "Ngày không xác định"}
             </Typography>
-            {/* Lượt xem ở vị trí cố định */}
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontWeight: 500,
-                position: "absolute",
-                top: "80px", // Đặt cố định vị trí ngay dưới tiêu đề
-                left: "16px", // Cùng padding với CardContent
-              }}
+              sx={{ display: "flex", alignItems: "center" }}
             >
-              <VisibilityIcon sx={{ fontSize: "18px", color: "#757575" }} />
+              <VisibilityIcon sx={{ fontSize: "18px", marginRight: 1 }} />
               {product.views || 0} lượt xem
             </Typography>
-          </div>
-          <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              onClick={() => navigate(`/promotion/${product.id}`)}
-              sx={{
-                flex: 1,
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: 2,
-                background: "linear-gradient(45deg, #1976d2, #42a5f5)",
-                "&:hover": {
-                  background: "linear-gradient(45deg, #1565c0, #2196f3)",
-                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
-                },
-              }}
-            >
-              Xem chi tiết
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              size="small"
-              onClick={handleOpen}
-              sx={{
-                flex: 1,
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: 2,
-                borderColor: "#1976d2",
-                color: "#1976d2",
-                "&:hover": {
-                  background: "rgba(25, 118, 210, 0.1)",
-                  borderColor: "#1565c0",
-                  color: "#1565c0",
-                },
-              }}
-            >
-              Liên hệ ngay
-            </Button>
           </Box>
+          <Typography
+            variant="body2"
+            sx={{
+              lineHeight: 1.6,
+              color: "#555",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {product.content.replace(/<[^>]+>/g, "")} {/* Loại bỏ thẻ HTML */}
+          </Typography>
         </CardContent>
       </Card>
 

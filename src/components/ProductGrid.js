@@ -1,12 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Grid, Typography, Box, Pagination } from "@mui/material";
 import ProductCard from "./ProductCard";
+import axiosClient from "../api/axiosClient";
 
-const ProductGrid = ({ promotions }) => {
+const ProductGrid = () => {
   const [page, setPage] = useState(1); // State để theo dõi trang hiện tại
-  const itemsPerPage = 9; // Số mục mỗi trang (3x3 trên desktop)
+  const [promotions, setPromotions] = useState([]); // State để lưu danh sách promotions từ API
+  const [isLoading, setIsLoading] = useState(true); // State để xử lý trạng thái tải
+  const itemsPerPage = 9; // Số mục mỗi trang
 
-  // Nếu promotions không phải là mảng, hiển thị thông báo
+  // Gọi API để lấy danh sách promotions khi component được mount
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const response = await axiosClient.get("/promotions"); // Giả sử endpoint là /promotions
+        setPromotions(response.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách promotions:", err);
+        setIsLoading(false);
+      }
+    };
+    fetchPromotions();
+  }, []);
+
+  // Hiển thị thông báo khi đang tải
+  if (isLoading) {
+    return (
+      <Typography sx={{ padding: "20px", textAlign: "center" }}>
+        Đang tải...
+      </Typography>
+    );
+  }
+
+  // Nếu không có dữ liệu từ API, hiển thị thông báo
   if (!Array.isArray(promotions) || promotions.length === 0) {
     return (
       <Typography sx={{ padding: "20px", textAlign: "center" }}>
@@ -32,7 +59,7 @@ const ProductGrid = ({ promotions }) => {
     <Box sx={{ maxWidth: 1200, margin: "0 auto", padding: "20px" }}>
       <Grid container spacing={3}>
         {paginatedPromotions.map((product) => (
-          <Grid item xs={12} sm={6} md={4} key={product.id}>
+          <Grid item xs={12} key={product.id}>
             <ProductCard product={product} />
           </Grid>
         ))}

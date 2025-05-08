@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ReplyIcon from "@mui/icons-material/Reply";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Header from "./Header";
 
 const PromotionDetail = () => {
@@ -39,8 +40,22 @@ const PromotionDetail = () => {
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentError, setCommentError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Thêm state cho modal liên hệ
+  const [contactOpen, setContactOpen] = useState(false);
+  const [thankYouOpen, setThankYouOpen] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    promotion_content_id: id,
+    full_name: "",
+    email: "",
+    phone_number: "",
+    city: "",
+    note: "",
+  });
+  const [contactError, setContactError] = useState("");
+  const [contactLoading, setContactLoading] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+  const cities = ["Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Khác"];
 
   // Lấy thông tin từ localStorage khi component mount
   useEffect(() => {
@@ -163,6 +178,47 @@ const PromotionDetail = () => {
     }
   };
 
+  // Hàm xử lý cho modal liên hệ
+  const handleContactOpen = () => setContactOpen(true);
+  const handleContactClose = () => {
+    setContactOpen(false);
+    setContactError("");
+    setContactFormData({
+      promotion_content_id: id,
+      full_name: "",
+      email: "",
+      phone_number: "",
+      city: "",
+      note: "",
+    });
+  };
+
+  const handleThankYouOpen = () => setThankYouOpen(true);
+  const handleThankYouClose = () => setThankYouOpen(false);
+
+  const handleContactChange = (e) => {
+    const { name, value } = e.target;
+    setContactFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setContactError("");
+    setContactLoading(true);
+
+    try {
+      const response = await axiosClient.post("/promotion_contact", contactFormData);
+      setContactLoading(false);
+      handleContactClose();
+      handleThankYouOpen();
+    } catch (err) {
+      setContactError(
+        err.response?.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!"
+      );
+      setContactLoading(false);
+    }
+  };
+
   if (!promotion) return <Typography>Loading...</Typography>;
 
   // Component để hiển thị bình luận và các trả lời lồng ghép
@@ -170,8 +226,8 @@ const PromotionDetail = () => {
     <Box
       sx={{
         mb: 1,
-        borderLeft: level > 0 ? `2px solid #d32f2f` : "none", // Đường viền bên trái cho bình luận con
-        pl: level * 3, // Thụt lề cho các bình luận con
+        borderLeft: level > 0 ? `2px solid #d32f2f` : "none",
+        pl: level * 3,
       }}
     >
       <ListItem
@@ -284,7 +340,7 @@ const PromotionDetail = () => {
               <Typography variant="h6" gutterBottom>
                 Thời gian khuyến mãi
               </Typography>
-              <Box sx={{ display: "flex", gap: 2 }}>
+              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 <Chip
                   label={`Bắt đầu: ${promotion.start_at
                     ? new Date(promotion.start_at).toLocaleDateString("vi-VN")
@@ -302,6 +358,27 @@ const PromotionDetail = () => {
                   variant="outlined"
                 />
               </Box>
+              {/* Nút Liên hệ ngay */}
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                onClick={handleContactOpen}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  borderColor: "#1976d2",
+                  color: "#1976d2",
+                  "&:hover": {
+                    background: "rgba(25, 118, 210, 0.1)",
+                    borderColor: "#1565c0",
+                    color: "#1565c0",
+                  },
+                }}
+              >
+                Liên hệ ngay
+              </Button>
             </Box>
           </Grid>
 
@@ -546,6 +623,292 @@ const PromotionDetail = () => {
               {loading ? "Đang gửi..." : "Gửi bình luận"}
             </Button>
           </form>
+        </Box>
+      </Modal>
+
+      {/* Modal để nhập thông tin liên hệ */}
+      <Modal
+        open={contactOpen}
+        onClose={handleContactClose}
+        aria-labelledby="contact-modal-title"
+        aria-describedby="contact-modal-description"
+        sx={{ "& .MuiBackdrop-root": { backdropFilter: "blur(2px)" } }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 800 },
+            bgcolor: "#fff",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+            borderRadius: 4,
+            overflow: "hidden",
+            transition: "all 0.3s ease-in-out",
+            animation: "fadeIn 0.3s ease-in",
+          }}
+        >
+          <Grid container>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              sx={{
+                display: { xs: "none", sm: "block" },
+                bgcolor: "linear-gradient(135deg, #1976d2, #42a5f5)",
+                position: "relative",
+              }}
+            >
+              <Box
+                sx={{
+                  height: "100%",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  p: 2,
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0.3)",
+                    zIndex: 1,
+                  },
+                }}
+              >
+                <img
+                  src="https://api.mobifone.vn/images/article/1744941873637_simso-mobifone-voucher-2tr.jpg"
+                  alt="Contact Illustration"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "8px 0 0 8px",
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ p: 4, position: "relative", bgcolor: "#f9f9f9" }}>
+                <IconButton
+                  onClick={handleContactClose}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "#1976d2",
+                    "&:hover": { color: "#1565c0" },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+                <Typography
+                  id="contact-modal-title"
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}
+                >
+                  Liên hệ nhận tư vấn
+                </Typography>
+                <Typography variant="body1" color="text.secondary" mb={3}>
+                  Vui lòng điền thông tin để nhận tư vấn về sản phẩm:{" "}
+                  <strong>{promotion.title}</strong>
+                </Typography>
+                <form onSubmit={handleContactSubmit}>
+                  <TextField
+                    fullWidth
+                    label="Họ và tên"
+                    name="full_name"
+                    value={contactFormData.full_name}
+                    onChange={handleContactChange}
+                    required
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={contactFormData.email}
+                    onChange={handleContactChange}
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Số điện thoại"
+                    name="phone_number"
+                    value={contactFormData.phone_number}
+                    onChange={handleContactChange}
+                    required
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Thành phố"
+                    name="city"
+                    value={contactFormData.city}
+                    onChange={handleContactChange}
+                    required
+                    margin="normal"
+                    size="small"
+                    autoComplete="off"
+                    variant="outlined"
+                    InputProps={{ autoComplete: "new-city", list: "cities" }}
+                    inputProps={{ list: "cities" }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  <datalist id="cities">
+                    {cities.map((city) => (
+                      <option key={city} value={city} />
+                    ))}
+                  </datalist>
+                  <TextField
+                    fullWidth
+                    label="Ghi chú"
+                    name="note"
+                    value={contactFormData.note}
+                    onChange={handleContactChange}
+                    multiline
+                    rows={3}
+                    margin="normal"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1976d2" },
+                        "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+                      },
+                    }}
+                  />
+                  {contactError && (
+                    <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                      {contactError}
+                    </Typography>
+                  )}
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{
+                      mt: 3,
+                      py: 1.5,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderRadius: "10px",
+                      background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+                      "&:hover": {
+                        background: "linear-gradient(45deg, #1565c0, #2196f3)",
+                        boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                    disabled={contactLoading}
+                  >
+                    {contactLoading ? "Đang gửi..." : "Gửi thông tin"}
+                  </Button>
+                </form>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
+
+      {/* Modal cảm ơn */}
+      <Modal
+        open={thankYouOpen}
+        onClose={handleThankYouClose}
+        aria-labelledby="thank-you-modal-title"
+        sx={{ "& .MuiBackdrop-root": { backdropFilter: "blur(2px)" } }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 450 },
+            bgcolor: "#fff",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+            p: 4,
+            borderRadius: 4,
+            textAlign: "center",
+            transition: "all 0.3s ease-in-out",
+            background: "linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%)",
+            animation: "fadeIn 0.3s ease-in",
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: 80, color: "success.main", mb: 3 }} />
+          <Typography
+            id="thank-you-modal-title"
+            variant="h4"
+            component="h2"
+            sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}
+          >
+            Cảm ơn bạn!
+          </Typography>
+          <Typography variant="body1" color="text.secondary" mb={4}>
+            Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleThankYouClose}
+            sx={{
+              textTransform: "none",
+              fontWeight: 700,
+              borderRadius: "10px",
+              py: 1.5,
+              background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #1565c0, #2196f3)",
+                boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
+              },
+              transition: "all 0.3s ease",
+            }}
+          >
+            Đóng
+          </Button>
         </Box>
       </Modal>
     </div>

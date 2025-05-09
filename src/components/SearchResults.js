@@ -31,7 +31,7 @@ const SearchResults = () => {
       {results.length > 0 ? (
         <Grid container spacing={2}>
           {results.map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product.id}>
+            <Grid item xs={12} key={product.id}>
               <ProductCard product={product} />
             </Grid>
           ))}
@@ -45,6 +45,7 @@ const SearchResults = () => {
       )}
     </Container>
   );
+  
 };
 
 export default SearchResults;
